@@ -40,6 +40,25 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _Wave_1_Amplitude: 1
+    - _Wave_1_Frequency: 0.25
+    - _Wave_1_Phase_Scale: 0.92
+    - _Wave_2_Amplitude: 1
+    - _Wave_2_Amplitude_1: 0
+    - _Wave_2_Frequency_1: 0.5
+    - _Wave_2_Frequency_2: 1.5
+    - _Wave_2_Phase_Scale_1: 0
+    - _Wave_2_Phase_Scale_2: 2
+    - _Wave_3_Amplitude_1: 0.25
+    - _Wave_3_Amplitude_2: 0.25
+    - _Wave_3_Frequency_2: 2
+    - _Wave_3_Phase_Scale_1: 0.25
+    - _Wave_4_Amplitude_2: 0.125
+    - _Wave_4_Frequency_1: 2.5
+    - _Wave_4_Phase_Scale_2: 0.6
+    - _Wave_Amplitude: 1
+    - _Wave_Frequency: 1
+    - _Wave_Phase_Scale: 1
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1
