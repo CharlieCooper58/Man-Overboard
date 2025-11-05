@@ -108,7 +108,7 @@ Shader "Custom/WavesShaderV2"
 
                 float amplitudeSum = 0.0f;
 
-                float maxHeight;
+                float maxHeight = 0.0;
 
                 for(int wi = 0; wi < _WaveCount; ++wi){
                     float2 d = normalize(float2(cos(seed), sin(seed)));
