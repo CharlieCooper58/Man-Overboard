@@ -46,8 +46,11 @@ Shader "Custom/WavesShaderV2"
             #pragma vertex vert
             #pragma fragment frag
 
+            #pragma multi_compile_fog
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl" 
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Fog.hlsl"
 
             struct Attributes
             {
@@ -68,6 +71,7 @@ Shader "Custom/WavesShaderV2"
                 float3 worldPos: TEXCOORD2;
                 float heightOffset: TEXCOORD3;
                 float maxHeight: TEXCOORD4;
+                float fogCoord: TEXCOORD5;
                 };
             
             TEXTURE2D(_BaseMap);
@@ -144,7 +148,7 @@ Shader "Custom/WavesShaderV2"
                 float4 newPos = float4(v.positionOS.xyz, 1.0) + float4(float3(0, fbm.x, 0), 0.0f);
                 i.worldPos = mul(unity_ObjectToWorld, newPos);//+= float3(0, fbm.x, 0);//;mul(newPos, unity_ObjectToWorld);
                 i.pos = TransformObjectToHClip(newPos);
-
+                i.fogCoord = ComputeFogFactor(i.pos.z);
                 i.normal = TransformObjectToWorldNormal(normalize(float3(-fbm.y, 1.0f, -fbm.z)));
 
                 return i;
@@ -196,7 +200,9 @@ Shader "Custom/WavesShaderV2"
 				float3 tipColor = _TipColor * pow(saturate(height/i.maxHeight), _TipAttenuation);
 
 				float3 output = _Ambient + diffuse + specular + tipColor;
-                return float4(output, 1.0f);
+                float4 finalColor = float4(output, 1.0);
+                finalColor.rgb = MixFog(finalColor.rgb, i.fogCoord);
+                return finalColor;
             }
             ENDHLSL
         }

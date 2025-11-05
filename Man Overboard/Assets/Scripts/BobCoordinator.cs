@@ -7,6 +7,9 @@ public class BobCoordinator : MonoBehaviour
 
     float desiredYOffset;
     Vector3 combinedWaterForce;
+    [SerializeField] float buoyancyForceModifier;
+
+    [SerializeField] float rotationLerpSpeed;
 
     [SerializeField] float baseWaterOffset;
 
@@ -25,12 +28,15 @@ public class BobCoordinator : MonoBehaviour
         {
             probes[i].UpdateBuoyancyParams();
             desiredYOffset += probes[i].offsetHeight;
-            //combinedWaterForce += probes[i]
+            combinedWaterForce += probes[i].driftDirection;
         }
         desiredYOffset /= probes.Length;
+        combinedWaterForce /= probes.Length;
         Vector3 desiredUpDirection = Vector3.Cross(probes[0].desiredPosition - probes[2].desiredPosition, probes[0].desiredPosition - probes[1].desiredPosition);
-        transform.rotation = Quaternion.LookRotation(transform.forward, desiredUpDirection);
-        rb.linearVelocity = new Vector3(rb.linearVelocity.x, desiredYOffset+baseWaterOffset+ - transform.position.y, rb.linearVelocity.z);
+        Quaternion desiredRotation = Quaternion.LookRotation(transform.forward, desiredUpDirection);
+        rb.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, Time.deltaTime * rotationLerpSpeed);
+        //rb.AddForce(currentForceMultiplier*combinedWaterForce + Vector3.up * (desiredYOffset + baseWaterOffset - transform.position.y));
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, buoyancyForceModifier*(desiredYOffset+baseWaterOffset+ - transform.position.y), rb.linearVelocity.z);
     }
 
 }
