@@ -47,7 +47,10 @@ public class Water : MonoBehaviour
             _WaveSeed += _WaveSeedIter;
         }
     }
-
+    public static Vector3 StaticGetWaterBehaviorAtPoint(Vector3 coord)
+    {
+        return instance.GetWaterBehaviorAtPoint(coord);
+    }
     public Vector3 GetWaterBehaviorAtPoint(Vector3 coord)
     {
 
