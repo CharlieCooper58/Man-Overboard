@@ -11,6 +11,8 @@ public class BuoyancyComponent : MonoBehaviour
 
     [SerializeField] float baseWaterOffset;
 
+    [SerializeField] float futurePredictionSteps;
+
     VoxelizedMesh voxels;
 
     Rigidbody rb;
@@ -25,6 +27,7 @@ public class BuoyancyComponent : MonoBehaviour
     private void Start()
     {
         voxelVol = voxels.vol;
+        rb.centerOfMass -= 0.5f * Vector3.up;
     }
 
     private void FixedUpdate()
@@ -35,10 +38,11 @@ public class BuoyancyComponent : MonoBehaviour
             int voxelsBelowWaterline = 0 ;
             Vector2Int key = voxels.keysArray[i];
             Vector3 forcePos = voxels.PointToPosition(new Vector3Int(key.x, voxels.coordinateHeights[key][0], key.y));
+            //forcePos.y = transform.position.y;
             for (int j = 0; j < voxels.coordinateHeights[voxels.keysArray[i]].Count; j++)
             {
                 // To do: this breaks down given high ship rotations, as the column of voxels no longer accurately shares an xz coordinate
-                float worldSpaceVoxelHeight = voxels.PointToPosition(new Vector3Int(key.x, voxels.coordinateHeights[key][j], key.y)).y;
+                float worldSpaceVoxelHeight = (voxels.PointToPosition(new Vector3Int(key.x, voxels.coordinateHeights[key][j], key.y))+rb.linearVelocity*futurePredictionSteps*Time.deltaTime).y;
 
                 if (worldSpaceVoxelHeight <= waterParams.x)
                 {
@@ -49,8 +53,9 @@ public class BuoyancyComponent : MonoBehaviour
                     // To do: add handling for if a voxel is half submerged?
                     break;
                 }
-                rb.AddForceAtPosition(voxelVol * voxelsBelowWaterline * Vector3.up, forcePos);
             }
+            // Density of water is 1000 kg/m^3
+            rb.AddForceAtPosition(1000*voxelVol * voxelsBelowWaterline * Vector3.up, forcePos);
         }
 
         //Vector3 desiredUpDirection = Vector3.Cross(probes[0].desiredPosition - probes[2].desiredPosition, probes[0].desiredPosition - probes[1].desiredPosition);

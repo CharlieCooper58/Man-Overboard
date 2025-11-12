@@ -45,7 +45,7 @@ Material:
     - _TipAttenuation: 2.5
     - _WaveCount: 16
     - _WaveDrag: 0.5
-    - _WaveHeight: 1.48
+    - _WaveHeight: 1.2
     - _WaveSeed: 4
     - _WaveSeedIter: 1
     - _WaveSpeed: 1.5
