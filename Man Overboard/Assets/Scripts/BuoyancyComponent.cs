@@ -1,11 +1,9 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BuoyancyComponent : MonoBehaviour
 {
     [Tooltip("The first three probes should be: front right, back left, back right.")]
-    [SerializeField] BuoyancyProbe[] probes;
-
-    float desiredYOffset;
     Vector3 combinedWaterForce;
     [SerializeField] float buoyancyForceModifier;
 
@@ -13,36 +11,53 @@ public class BuoyancyComponent : MonoBehaviour
 
     [SerializeField] float baseWaterOffset;
 
-    [SerializeField] int voxelsToCalculate;
+    VoxelizedMesh voxels;
 
     Rigidbody rb;
+    float voxelVol;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody> ();
+        voxels = GetComponent<VoxelizedMesh> ();
+    }
+
+    private void Start()
+    {
+        voxelVol = voxels.vol;
     }
 
     private void FixedUpdate()
     {
-        desiredYOffset = 0f;
-        combinedWaterForce = Vector3.zero;
-        for(int i = 0; i<probes.Length; i++)
+        for(int i = 0; i<voxels.keysArray.Length; i++)
         {
-            //probes[i].UpdateBuoyancyParams();
-            
-            //combinedWaterForce += probes[i].driftDirection;
+            Vector3 waterParams = Water.StaticGetWaterBehaviorAtPoint(voxels.PositionFromKey(voxels.keysArray[i]));
+            int voxelsBelowWaterline = 0 ;
+            Vector2Int key = voxels.keysArray[i];
+            Vector3 forcePos = voxels.PointToPosition(new Vector3Int(key.x, voxels.coordinateHeights[key][0], key.y));
+            for (int j = 0; j < voxels.coordinateHeights[voxels.keysArray[i]].Count; j++)
+            {
+                // To do: this breaks down given high ship rotations, as the column of voxels no longer accurately shares an xz coordinate
+                float worldSpaceVoxelHeight = voxels.PointToPosition(new Vector3Int(key.x, voxels.coordinateHeights[key][j], key.y)).y;
+
+                if (worldSpaceVoxelHeight <= waterParams.x)
+                {
+                    voxelsBelowWaterline++;
+                }
+                else
+                {
+                    // To do: add handling for if a voxel is half submerged?
+                    break;
+                }
+                rb.AddForceAtPosition(voxelVol * voxelsBelowWaterline * Vector3.up, forcePos);
+            }
         }
-        for(int i = 0; i<voxelsToCalculate; i++)
-        {
-            Water.StaticGetWaterBehaviorAtPoint(Vector3.zero);
-        }
-        desiredYOffset /= probes.Length;
-        combinedWaterForce /= probes.Length;
-        Vector3 desiredUpDirection = Vector3.Cross(probes[0].desiredPosition - probes[2].desiredPosition, probes[0].desiredPosition - probes[1].desiredPosition);
-        Quaternion desiredRotation = Quaternion.LookRotation(transform.forward, desiredUpDirection);
-        rb.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, Time.deltaTime * rotationLerpSpeed);
-        rb.AddForce(Vector3.up * (desiredYOffset + baseWaterOffset - transform.position.y));
-        rb.linearVelocity = new Vector3(rb.linearVelocity.x, buoyancyForceModifier*(desiredYOffset+baseWaterOffset+ - transform.position.y), rb.linearVelocity.z);
+
+        //Vector3 desiredUpDirection = Vector3.Cross(probes[0].desiredPosition - probes[2].desiredPosition, probes[0].desiredPosition - probes[1].desiredPosition);
+        //Quaternion desiredRotation = Quaternion.LookRotation(transform.forward, desiredUpDirection);
+        //rb.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, Time.deltaTime * rotationLerpSpeed);
+        //rb.AddForce(Vector3.up * (desiredYOffset + baseWaterOffset - transform.position.y));
+        //rb.linearVelocity = new Vector3(rb.linearVelocity.x, buoyancyForceModifier*(desiredYOffset+baseWaterOffset+ - transform.position.y), rb.linearVelocity.z);
     }
 
     private float CalculateForceFromProbe(BuoyancyProbe probe)

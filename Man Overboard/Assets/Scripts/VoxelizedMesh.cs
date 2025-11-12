@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -7,8 +8,9 @@ using UnityEngine;
 public class VoxelizedMesh : MonoBehaviour
 {
     public List<Vector3Int> gridPoints;
-    Dictionary<Vector2Int, List<float>> coordinateHeights;
+    public Dictionary<Vector2Int, List<int>> coordinateHeights;
     public Vector3 halfsize = new Vector3(0.51f, .1f, 0.51f);
+    public Vector2Int[] keysArray;
     Vector3 cellSize { get
         {
             return halfsize * 2;
@@ -16,7 +18,7 @@ public class VoxelizedMesh : MonoBehaviour
     }
 
     public Vector3 localOrigin;
-    float vol
+    public float vol
     {
         get
         {
@@ -25,21 +27,26 @@ public class VoxelizedMesh : MonoBehaviour
     }
     void Start()
     {
-        coordinateHeights = new Dictionary<Vector2Int, List<float>>();
+        coordinateHeights = new Dictionary<Vector2Int, List<int>>();
         foreach(Vector3Int coord in gridPoints)
         {
             Vector2Int key = new Vector2Int(coord.x, coord.z);
             if (!coordinateHeights.ContainsKey(key))
             {
-                coordinateHeights[key] = new List<float>();
+                coordinateHeights[key] = new List<int>();
             }
             coordinateHeights[key].Add(coord.y);
         }
+        keysArray = coordinateHeights.Keys.ToArray();
     }
 
     public Vector3 PointToPosition(Vector3Int point)
     {
         return transform.TransformPoint(localOrigin + halfsize+ new Vector3(point.x * cellSize.x, point.y * cellSize.y, point.z * cellSize.z));
+    }
+    public Vector3 PositionFromKey(Vector2Int key)
+    {
+        return PointToPosition(new Vector3Int(key.x, 0, key.y));
     }
 
     // Extremely basic function for voxelizing mesh.  Should correctly work on a mesh with a concave meshcollider as a quick and dirty editor solution
