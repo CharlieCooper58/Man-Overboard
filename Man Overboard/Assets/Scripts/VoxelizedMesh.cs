@@ -6,13 +6,9 @@ using UnityEngine;
 
 public class VoxelizedMesh : MonoBehaviour
 {
-    private void Start()
-    {
-        VoxelizeMesh(GetComponent<MeshFilter>());
-    }
     public List<Vector3Int> gridPoints;
-    Dictionary<Vector2Int, float> coordinateHeights;
-    public static Vector3 halfsize = new Vector3(0.25f, .1f, 0.25f);
+    Dictionary<Vector2Int, List<float>> coordinateHeights;
+    public Vector3 halfsize = new Vector3(0.51f, .1f, 0.51f);
     Vector3 cellSize { get
         {
             return halfsize * 2;
@@ -20,9 +16,30 @@ public class VoxelizedMesh : MonoBehaviour
     }
 
     public Vector3 localOrigin;
+    float vol
+    {
+        get
+        {
+            return halfsize.x*halfsize.y*halfsize.z;
+        }
+    }
+    void Start()
+    {
+        coordinateHeights = new Dictionary<Vector2Int, List<float>>();
+        foreach(Vector3Int coord in gridPoints)
+        {
+            Vector2Int key = new Vector2Int(coord.x, coord.z);
+            if (!coordinateHeights.ContainsKey(key))
+            {
+                coordinateHeights[key] = new List<float>();
+            }
+            coordinateHeights[key].Add(coord.y);
+        }
+    }
+
     public Vector3 PointToPosition(Vector3Int point)
     {
-        return transform.TransformPoint(localOrigin + halfsize + new Vector3(point.x * cellSize.x, point.y * cellSize.y, point.z * cellSize.z));
+        return transform.TransformPoint(localOrigin + halfsize+ new Vector3(point.x * cellSize.x, point.y * cellSize.y, point.z * cellSize.z));
     }
 
     // Extremely basic function for voxelizing mesh.  Should correctly work on a mesh with a concave meshcollider as a quick and dirty editor solution
@@ -42,7 +59,7 @@ public class VoxelizedMesh : MonoBehaviour
 
         Bounds bounds = meshCollider.bounds;
         Vector3 minExtents = bounds.center - bounds.extents;
-        Vector3Int cellCount = new Vector3Int(Mathf.CeilToInt(bounds.extents.x / halfsize.x), Mathf.CeilToInt(bounds.extents.y / halfsize.y), Mathf.CeilToInt(bounds.extents.z / halfsize.z));
+        Vector3Int cellCount = new Vector3Int(Mathf.CeilToInt(bounds.extents.x / voxelizedMesh.halfsize.x), Mathf.CeilToInt(bounds.extents.y / voxelizedMesh.halfsize.y), Mathf.CeilToInt(bounds.extents.z / voxelizedMesh.halfsize.z));
         voxelizedMesh.gridPoints.Clear();
         voxelizedMesh.localOrigin = voxelizedMesh.transform.InverseTransformPoint(minExtents);
 
@@ -53,7 +70,7 @@ public class VoxelizedMesh : MonoBehaviour
                 for(int y = 0; y < cellCount.y; y++)
                 {
                     Vector3 pos = voxelizedMesh.PointToPosition(new Vector3Int(x, y, z));
-                    if(Physics.CheckBox(pos, halfsize))
+                    if(Physics.CheckBox(pos, voxelizedMesh.halfsize))
                     {
                         voxelizedMesh.gridPoints.Add(new Vector3Int(x, y, z));
                     }
@@ -75,7 +92,7 @@ public class VoxelizedMeshEditor : Editor
         foreach (Vector3Int gridPoint in voxelizedMesh.gridPoints)
         {
             Vector3 worldPos = voxelizedMesh.PointToPosition(gridPoint);
-            Handles.DrawWireCube(worldPos, VoxelizedMesh.halfsize * 2f);
+            Handles.DrawWireCube(worldPos, voxelizedMesh.halfsize * 2f);
         }
 
         Handles.color = Color.red;
