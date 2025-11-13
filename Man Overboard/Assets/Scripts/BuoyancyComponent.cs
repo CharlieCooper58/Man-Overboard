@@ -57,17 +57,6 @@ public class BuoyancyComponent : MonoBehaviour
             // Density of water is 1000 kg/m^3
             rb.AddForceAtPosition(1000*voxelVol * voxelsBelowWaterline * Vector3.up, forcePos);
         }
-
-        //Vector3 desiredUpDirection = Vector3.Cross(probes[0].desiredPosition - probes[2].desiredPosition, probes[0].desiredPosition - probes[1].desiredPosition);
-        //Quaternion desiredRotation = Quaternion.LookRotation(transform.forward, desiredUpDirection);
-        //rb.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, Time.deltaTime * rotationLerpSpeed);
-        //rb.AddForce(Vector3.up * (desiredYOffset + baseWaterOffset - transform.position.y));
-        //rb.linearVelocity = new Vector3(rb.linearVelocity.x, buoyancyForceModifier*(desiredYOffset+baseWaterOffset+ - transform.position.y), rb.linearVelocity.z);
-    }
-
-    private float CalculateForceFromProbe(BuoyancyProbe probe)
-    {
-        return 0;
     }
 
 }
